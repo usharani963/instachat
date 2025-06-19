@@ -174,6 +174,8 @@ export default function ChatPage() {
       console.error("Image upload failed:", err);
     }
   };
+  
+
 
   return (
     <div className="p-4 relative min-h-screen">
