@@ -1,0 +1,15 @@
+# Node
+node_modules/
+.env
+uploads/
+logs/
+*.log
+
+# React
+client/node_modules/
+client/build/
+client/dist/
+
+# System
+.DS_Store
+Thumbs.db
