@@ -7,39 +7,56 @@ export default function UserSearch({ onChatCreated }) {
 
   const handleSearch = async () => {
     if (!query) return;
-    const res = await axios.get(`http://localhost:5000/api/users/search?q=${query}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    setResults(res.data);
+    try {
+      const res = await axios.get(`http://localhost:5000/api/users/search?q=${query}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setResults(res.data);
+    } catch (error) {
+      console.error("Search error:", error);
+    }
   };
 
   const createChat = async (userId) => {
-    const res = await axios.post(
-      "http://localhost:5000/api/chats",
-      { userId },
-      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-    );
-    onChatCreated(res.data); // refresh chats in parent
-    setQuery("");
-    setResults([]);
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/chats",
+        { userId },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      onChatCreated(res.data); // Refresh chats in parent
+      setQuery("");
+      setResults([]);
+    } catch (error) {
+      console.error("Create chat error:", error);
+    }
   };
 
   return (
-    <div className="mb-4">
+    <div className="p-4">
       <input
-        className="border p-2 w-full"
+        className="border p-2 w-full mb-2"
         type="text"
         placeholder="Search users..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyUp={(e) => e.key === "Enter" && handleSearch()}
       />
-      <div className="bg-white border mt-1">
+      <button
+        onClick={handleSearch}
+        className="bg-pink-500 text-white px-4 py-2 rounded mb-2"
+      >
+        Search
+      </button>
+
+      <div className="bg-white border rounded">
         {results.map((user) => (
           <div
             key={user._id}
             onClick={() => createChat(user._id)}
-            className="p-2 cursor-pointer hover:bg-gray-100"
+            className="p-2 cursor-pointer hover:bg-gray-100 border-b"
           >
             {user.username}
           </div>

@@ -3,13 +3,18 @@ const router = express.Router();
 const Chat = require("../models/Chat");
 const { protect } = require("../middleware/authMiddleware");
 
-// Create or fetch a chat
+// @route   POST /api/chat
+// @desc    Create or fetch one-on-one chat
 router.post("/", protect, async (req, res) => {
   const { userId } = req.body;
 
+  if (!userId) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
+
   try {
     let chat = await Chat.findOne({
-      participants: { $all: [req.user.id, userId] },
+      participants: { $all: [req.user.id, userId], $size: 2 },
     });
 
     if (!chat) {
@@ -17,19 +22,24 @@ router.post("/", protect, async (req, res) => {
       await chat.save();
     }
 
-    res.json(chat);
+    const populatedChat = await Chat.findById(chat._id)
+      .populate("participants", "username profilePic");
+
+    res.json(populatedChat);
   } catch (error) {
     console.error("Error creating chat:", error);
     res.status(500).json({ message: "Server Error" });
   }
 });
 
-// Get all chats of current user
+// @route   GET /api/chat
+// @desc    Fetch all chats for logged-in user
 router.get("/", protect, async (req, res) => {
   try {
     const chats = await Chat.find({ participants: req.user.id })
       .populate("participants", "username profilePic")
-      .populate("lastMessage");
+      .populate("lastMessage")
+      .sort({ updatedAt: -1 });
 
     res.json(chats);
   } catch (error) {
